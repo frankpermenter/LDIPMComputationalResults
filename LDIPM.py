@@ -108,14 +108,15 @@ class longstep:
         v = self.e * 0 
         r = self.e
         verbose = False
+        dinf_bound = 0.99
 
         if verbose:
             print("Step-type:", step_type)
         
         for iter_cnt in range(0, iters):
-            success, alpha_min, alpha_max = self.line_search(r = r, v = v, dinf_bound = .99)
+            success, alpha_min, alpha_max = self.line_search(r = self.e, v = v, dinf_bound = dinf_bound)
             if (success):
-                r = r * 1.0/np.abs(alpha_max + 1e-15) 
+                r = self.e * 1.0/np.abs(alpha_max) 
             else:
                 print(iter_cnt)
                 print(alpha_min)
@@ -126,7 +127,12 @@ class longstep:
             final_gap = self.gap(r=r, v=v)
             d, x, s, stepsize = self.newton_dir(r, v)
             dinf = np.linalg.norm(d, np.Inf)
-            if dinf < 1.0 and final_gap[0] < target_duality_gap * num_ineqs:
+            if (np.abs(dinf - dinf_bound) > 1e-2):
+                print("line search failed")
+                raise
+                
+            mu = float((r.transpose() @ r) / num_ineqs)
+            if dinf <= 1.0 and mu < target_duality_gap:
                 return iter_cnt
 
             v, damping = self.Newton(r = r, v0 = v, iters = newton_iters, eps = 1e10, step_type = step_type)

@@ -9,7 +9,7 @@ def DoTest(num_vars, num_ineqs, rank_W):
     iters_dual = []
     iters_primal = []
 
-    max_iters = 30
+    max_iters = 40
     target_duality_gap = 1e-3
 
     while (problems.next()):
